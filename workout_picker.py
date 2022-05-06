@@ -1,48 +1,60 @@
 import pandas as pd
 import random as rd
 
+def pick(df):
+    pick = df.sample(weights = df.freq)
+    pick_str = str(pick.exercise.iloc[0])
+    return pick_str
+
 df = pd.read_csv('exercises.csv')
 
-lower_df = df[df.upper_lower=='lower']
-upper_df = df[df.upper_lower=='upper']
-aux_df = df[df.upper_lower=='aux']
+workout_type = input('Enter workout type (primary/secondary):')
 
-#Get list of all types
-lower_types = lower_df.type.unique().tolist()
+df = df[df.primacy == workout_type]
 
-#Pick on type at random
-lower_type_pick = lower_types[round(rd.random()*(len(lower_types)-1))]
-print(lower_type_pick)
+if workout_type == 'primary':
+    lower_df = df[df.upper_lower=='lower']
 
-#filter lower dataframe for exercises of this types only
-lower_df = lower_df[lower_df.type == lower_type_pick]
+    #Get list of all types
+    lower_types = lower_df.type.unique().tolist()
 
-#Pick exercise of this type at random given freq weights
-lower_pick = lower_df.sample(weights = lower_df.freq)
+    #Pick on type at random
+    lower_type = rd.choice(lower_types)
+    print(lower_type)
 
-#If this exercise taxes the grip, make sure not to choose an upper that taxes the grip as well
-if lower_type_pick == 'push':
-    upper_df = upper_df[upper_df.type.isin(['horizontal pull','vertical pull'])]
+    #filter dataframe for exercises of this type only
+    lower_df = lower_df[lower_df.type == lower_type]
+
+    #Pick exercise of this type at random given freq weights
+    lower_pick = pick(lower_df)
+
+    upper_df = df[df.upper_lower=='upper']
+
+    #If this exercise taxes the grip, make sure not to choose an upper that taxes the grip as well
+    upper_type = 'push' if lower_type == 'pull' else 'pull'
+    print(upper_type)
+
+    #filter dataframe for exercises of this types only
+    upper_df = upper_df[upper_df.type == upper_type]
+
+    #Get list of directions
+    upper_dirs = upper_df.direction.unique().tolist()
+
+    #Pick direction at random
+    upper_dir = rd.choice(upper_dirs)
+    print(upper_dir)
+
+    #filter upper dataframe for exercises of this types only
+    upper_df = upper_df[upper_df.direction == upper_dir]
+
+    upper_pick = pick(upper_df)
+
+    workout = (lower_pick, upper_pick)
+
 else:
-    upper_df = upper_df[upper_df.type.isin(['horizontal push','vertical push'])]
 
-#Get list of all types
-upper_types = upper_df.type.unique().tolist()
+    secondary_pick = pick(df)
 
-#Pick on type at random
-upper_type_pick = upper_types[round(rd.random()*(len(lower_types)-1))]
-print(upper_type_pick)
+    workout = secondary_pick
 
-#filter upper dataframe for exercises of this types only
-upper_df = upper_df[upper_df.type == upper_type_pick]
-
-upper_pick = upper_df.sample(weights = upper_df.freq)
-
-aux_pick = aux_df.sample(weights = aux_df.freq)
-
-print("Today's workout will consist of the following:")
-if rd.random() <= .2:
-    print(str(aux_pick.exercise.iloc[0]))
-else:
-    print(str(lower_pick.exercise.iloc[0]))
-    print(str(upper_pick.exercise.iloc[0]))
+print("Today's workout will consist of: {}".format(workout))
