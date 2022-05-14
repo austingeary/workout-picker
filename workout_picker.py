@@ -8,45 +8,38 @@ def pick(df):
 
 df = pd.read_csv('exercises.csv')
 
-workout_type = input('Enter workout type (primary/secondary):')
+primacy = int(input('Enter workout type (1/2):'))
 
-df = df[df.primacy == workout_type]
+df = df[df.primacy == primacy]
 
-if workout_type == 'primary':
-    lower_df = df[df.upper_lower=='lower']
+if primacy == 1:
 
-    #Get list of all types
-    lower_types = lower_df.type.unique().tolist()
+    lower_df = df[df.upper==0]
 
-    #Pick on type at random
-    lower_type = rd.choice(lower_types)
-    print(lower_type)
+    #Decide on push/pull
+    lower_push = round(rd.random())
 
-    #filter dataframe for exercises of this type only
-    lower_df = lower_df[lower_df.type == lower_type]
+    #Filter on push/pull
+    lower_df = lower_df[lower_df.push == lower_push]
 
     #Pick exercise of this type at random given freq weights
     lower_pick = pick(lower_df)
 
-    upper_df = df[df.upper_lower=='upper']
+    upper_df = df[df.upper==1]
 
-    #If this exercise taxes the grip, make sure not to choose an upper that taxes the grip as well
-    upper_type = 'push' if lower_type == 'pull' else 'pull'
-    print(upper_type)
+    #If the lower body is push, do pull for upper body, and visa versa. This is to spare the grip.
+    upper_push = 1 if lower_push == 0 else 0
 
-    #filter dataframe for exercises of this types only
-    upper_df = upper_df[upper_df.type == upper_type]
+    #Filter on push/pull
+    upper_df = upper_df[upper_df.push == upper_push]
 
-    #Get list of directions
-    upper_dirs = upper_df.direction.unique().tolist()
+    #Decide on vertical/horizontal
+    upper_vert = round(rd.random())
 
-    #Pick direction at random
-    upper_dir = rd.choice(upper_dirs)
-    print(upper_dir)
+    #Filter on vertical/horizontal
+    upper_df = upper_df[upper_df.vertical == upper_vert]
 
-    #filter upper dataframe for exercises of this types only
-    upper_df = upper_df[upper_df.direction == upper_dir]
-
+    #Pick exercise of this type at random given freq weights
     upper_pick = pick(upper_df)
 
     workout = (lower_pick, upper_pick)
@@ -54,7 +47,6 @@ if workout_type == 'primary':
 else:
 
     secondary_pick = pick(df)
-
     workout = secondary_pick
 
 print("Today's workout will consist of: {}".format(workout))
